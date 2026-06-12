@@ -1,0 +1,46 @@
+node_modules/
+~$*.docx
+.env
+
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Archivos compilados de Python
+**/__pycache__/
+*.pyc
+
+
+# Carpetas de compilación
+target/
+build/
+out/
+
+# Archivos de configuración de editores/IDEs
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+
+# Dependencias y caché de Angular
+node_modules/
+.angular/
+
+# Carpeta de producción (compilado final)
+dist/
+.tmp/
+
+
+
+# Archivos del sistema y temporales
+Thumbs.db
+.DS_Store
+~$*.docx
+*.log
+.env
