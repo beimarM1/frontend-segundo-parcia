@@ -15,7 +15,7 @@ import logging
 import os
 from typing import List, Optional
 
-import google.generativeai as genai
+from services.llm_client import LLMClient
 from dotenv import load_dotenv
 
 from models.domain import FormatoReporte
@@ -211,7 +211,7 @@ Responde SOLO con el JSON. Sin texto adicional.
 """
             response = self._gemini.generate_content(system_prompt)
             import json, re
-            texto = response.text.strip()
+            texto = response.strip()
             # Limpiar bloques markdown si los hay
             texto = re.sub(r"```json\s*|\s*```", "", texto).strip()
             gemini_entidades = json.loads(texto)
@@ -246,8 +246,10 @@ Responde SOLO con el JSON. Sin texto adicional.
 
     @staticmethod
     def _init_gemini():
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-            return genai.GenerativeModel("gemini-2.5-flash")
+        try:
+            client = LLMClient()
+            if client.api_key:
+                return client
+        except Exception:
+            pass
         return None

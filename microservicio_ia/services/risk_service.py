@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from sklearn.linear_model import LinearRegression
-import google.generativeai as genai
+from services.llm_client import LLMClient
 from dotenv import load_dotenv
 
 from models.domain import HistoricoTramite, NivelRiesgo, RiesgoAnalisis
@@ -261,9 +261,9 @@ class RiskService:
                     f"y prioridad sugerida: {prioridad}. "
                     f"Escribe un párrafo ejecutivo conciso en español para el administrador."
                 )
-                return self._gemini.generate_content(prompt).text.strip()
+                return self._gemini.generate_content(prompt).strip()
             except Exception as exc:
-                logger.warning("[RiskService] Gemini falló en resumen: %s", exc)
+                logger.warning("[RiskService] LLM falló en resumen: %s", exc)
 
         # Plantilla de fallback
         num_anomalias = len(anomalias)
@@ -296,8 +296,10 @@ class RiskService:
 
     @staticmethod
     def _init_gemini():
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-            return genai.GenerativeModel("gemini-2.5-flash")
+        try:
+            client = LLMClient()
+            if client.api_key:
+                return client
+        except Exception:
+            pass
         return None

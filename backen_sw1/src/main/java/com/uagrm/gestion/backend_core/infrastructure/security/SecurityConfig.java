@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/presence/**",
                                 "/ws/**",
                                 "/ws-workflow/**", // <-- AÑADE ESTA LÍNEA AQUÍ  
                                 "/v3/api-docs/**",

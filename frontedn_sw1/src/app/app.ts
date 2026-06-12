@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { PwaUpdateService } from './services/pwa-update.service';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +9,6 @@ import { RouterModule } from '@angular/router';
   template: '<router-outlet></router-outlet>',
   styles: []
 })
-export class AppComponent {}
+export class AppComponent {
+  private pwaUpdate = inject(PwaUpdateService);
+}

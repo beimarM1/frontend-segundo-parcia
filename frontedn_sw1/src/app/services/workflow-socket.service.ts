@@ -40,7 +40,7 @@ export class WorkflowSocketService implements OnDestroy {
 
   // ── Conexión ──────────────────────────────────────────────────────────────
 
-  connect(workflowId: string, username: string): void {
+  connect(workflowId: string, username: string, clientSessionId?: string): void {
     // Si ya hay una conexión activa, la reutilizamos
     if (this.stompClient?.connected) return;
 
@@ -48,6 +48,7 @@ export class WorkflowSocketService implements OnDestroy {
       webSocketFactory: () => new SockJS(environment.wsWorkflowUrl),
       connectHeaders: {
         username: username,
+        clientSessionId: clientSessionId || '',
       },
       debug: () => {},
       reconnectDelay: 5000,

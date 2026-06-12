@@ -780,8 +780,8 @@ export class DesignerComponent implements OnInit, OnDestroy {
       const sesionActiva = this.authService.getSession()(); // Ejecuta la señal del estado de sesión
       const nombreParaIdentificar = sesionActiva?.name || 'Beimar - Web'; // 🚀 Usamos solo .name que sí existe
 
-      // Conectar el socket con el segundo parámetro obligatorio sanado
-      this.socket.connect(this.workflowId, nombreParaIdentificar);
+      // Conectar el socket con el segundo parámetro obligatorio sanado e incluir mySessionId
+      this.socket.connect(this.workflowId, nombreParaIdentificar, this.mySessionId);
 
       // 1. Suscribirse a actualizaciones
       this.socketSub = this.socket.getUpdates().subscribe((u) => this.handleRemote(u));

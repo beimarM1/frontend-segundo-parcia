@@ -10,8 +10,8 @@ import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { 
-    path: '', 
+  {
+    path: '',
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
@@ -20,6 +20,13 @@ export const routes: Routes = [
       { path: 'designer/:id', component: DesignerComponent },
       { path: 'worklist', component: WorklistComponent },
       { path: 'tracking', component: TrackingComponent },
+      {
+        path: 'politicas',
+        loadComponent: () =>
+          import('./politica-voz/politica-voz.component').then(
+            (m) => m.PoliticaVozComponent
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

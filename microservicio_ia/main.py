@@ -20,7 +20,7 @@ from routers.report_router import router as report_router
 
 # Importaciones legacy (compatibilidad con Primer Parcial)
 from pydantic import BaseModel
-from schemas import WorkflowGenerationRequest, WorkflowDefinitionSchema
+from legacy_schemas import WorkflowGenerationRequest, WorkflowDefinitionSchema
 from services.ai_service import AIService
 
 # ---------------------------------------------------------------------------
@@ -115,38 +115,14 @@ async def generate_workflow(request: WorkflowGenerationRequest):
 
 @app.post("/ai/chat", tags=["💬 Chat Asistente"], summary="Chat con el asistente BPM")
 async def chat(request: ChatRequest):
-    """Endpoint legacy: asistente conversacional simple para orientación BPM."""
+    """Asistente conversacional inteligente impulsado por Groq Llama 3.3."""
     try:
-        msg = request.message.lower()
-        reply = "Entendido, estoy procesando tu solicitud sobre flujos y trámites."
-
-        if "retraso" in msg or "lento" in msg:
-            reply = (
-                "Puedo analizar los cuellos de botella en el tablero de control. "
-                "Generalmente los retrasos ocurren en nodos de aprobación con alta carga."
-            )
-        elif "iniciar" in msg or "nuevo trámite" in msg:
-            reply = (
-                "Para iniciar un nuevo trámite, ve a 'Mis Trámites' y presiona 'Nuevo Trámite'. "
-                "También puedo clasificar tu solicitud si describes tu necesidad."
-            )
-        elif "bandeja" in msg or "tarea" in msg:
-            reply = (
-                "Tu bandeja se actualiza en tiempo real. "
-                "Haz clic en 'Completar' en cualquier tarea pendiente para avanzar el flujo."
-            )
-        elif "riesgo" in msg or "analisis" in msg:
-            reply = (
-                "Puedo analizar el riesgo de un trámite. "
-                "Usa el endpoint POST /ai/engine/risk-analysis con el ID del trámite."
-            )
-
+        reply = await _ai_service_legacy.chat(request.message)
         return {"reply": reply}
     except Exception as exc:
         logger.error("[main] Error en chat: %s", exc)
         return JSONResponse(status_code=500, content={"detail": str(exc)})
 
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

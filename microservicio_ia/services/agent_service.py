@@ -16,7 +16,7 @@ import json
 import logging
 from typing import Optional
 
-import google.generativeai as genai
+from services.llm_client import LLMClient
 from dotenv import load_dotenv
 
 from models.domain import IntentionClase, Politica
@@ -129,7 +129,7 @@ class AgentService:
     def _gemini_pedir_documentos(
         self, docs: list, nombre_politica: str, texto: str
     ) -> str:
-        """Usa Gemini para generar un mensaje educado solicitando documentos faltantes."""
+        """Usa LLM para generar un mensaje educado solicitando documentos faltantes."""
         try:
             prompt = (
                 f"Eres un asistente de atención al ciudadano. "
@@ -140,13 +140,13 @@ class AgentService:
                 f"pidiendo educadamente los documentos faltantes."
             )
             response = self._gemini.generate_content(prompt)
-            return response.text.strip()
+            return response.strip()
         except Exception as exc:
-            logger.warning("[AgentService] Gemini falló al pedir docs: %s", exc)
+            logger.warning("[AgentService] LLM falló al pedir docs: %s", exc)
             return f"Para procesar su solicitud de '{nombre_politica}' necesita adjuntar: {', '.join(docs)}."
 
     def _gemini_confirmar_politica(self, politica: Politica, texto: str) -> str:
-        """Usa Gemini para confirmar la política detectada con lenguaje natural."""
+        """Usa LLM para confirmar la política detectada con lenguaje natural."""
         try:
             prompt = (
                 f"Eres un asistente de atención al ciudadano. "
@@ -156,9 +156,9 @@ class AgentService:
                 f"Confirma amablemente y pregunta si desea proceder."
             )
             response = self._gemini.generate_content(prompt)
-            return response.text.strip()
+            return response.strip()
         except Exception as exc:
-            logger.warning("[AgentService] Gemini falló al confirmar política: %s", exc)
+            logger.warning("[AgentService] LLM falló al confirmar política: %s", exc)
             return f"Lo guiaré en el proceso de '{politica.nombre}'. {politica.descripcion}"
 
     @staticmethod
@@ -200,11 +200,13 @@ class AgentService:
 
     @staticmethod
     def _init_gemini():
-        """Inicializa el cliente Gemini si hay API key disponible."""
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-            logger.info("[AgentService] Gemini configurado como enriquecedor NL.")
-            return genai.GenerativeModel("gemini-2.5-flash")
-        logger.warning("[AgentService] Sin GOOGLE_API_KEY. Usando plantillas de texto.")
+        """Inicializa el cliente LLMClient usando Groq."""
+        try:
+            client = LLMClient()
+            if client.api_key:
+                logger.info("[AgentService] Groq LLMClient configurado como enriquecedor NL.")
+                return client
+        except Exception as e:
+            logger.error(f"[AgentService] Error inicializando LLMClient: {e}")
+        logger.warning("[AgentService] Sin GROQ_API_KEY. Usando plantillas de texto.")
         return None

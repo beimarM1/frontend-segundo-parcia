@@ -8,11 +8,12 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
-//import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.web.socket.messaging.SessionConnectedEvent; // Asegúrate de cambiar el import
+import java.util.concurrent.CompletableFuture;
+import org.springframework.web.socket.messaging.SessionConnectedEvent;
 
 @Component
 @Slf4j
@@ -20,29 +21,44 @@ import org.springframework.web.socket.messaging.SessionConnectedEvent; // Asegú
 public class WebSocketEventListener {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
-    /*
-     * @EventListener
-     * public void handleConnect(SessionConnectEvent event) {
-     * StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-     * String sessionId = accessor.getSessionId();
-     * if (sessionId != null) {
-     * activeSessions.add(sessionId);
-     * log.info("WebSocket CONNECT | sessionId={} | total={}", sessionId,
-     * activeSessions.size());
-     * broadcastPresence();
-     * }
-     * }
-     */
+    private final Map<String, String> stompToClientSession = new ConcurrentHashMap<>();
+    private final Set<String> activeClientSessions = ConcurrentHashMap.newKeySet();
+    private final Map<String, String> stompToUsername = new ConcurrentHashMap<>();
+
+    public Map<String, String> getStompToUsername() {
+        return stompToUsername;
+    }
 
     @EventListener
-    public void handleConnected(SessionConnectedEvent event) { // Cambiado aquí
+    public void handleConnected(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = accessor.getSessionId();
+        String clientSessionId = accessor.getFirstNativeHeader("clientSessionId");
+        String username = accessor.getFirstNativeHeader("username");
+        
         if (sessionId != null) {
-            activeSessions.add(sessionId);
-            log.info("WebSocket CONNECTED | sessionId={} | total={}", sessionId, activeSessions.size());
-            broadcastPresence();
+            if (clientSessionId == null || clientSessionId.isEmpty()) {
+                clientSessionId = sessionId;
+            }
+            if (username == null || username.isEmpty()) {
+                username = "Invitado";
+            }
+            stompToClientSession.put(sessionId, clientSessionId);
+            activeClientSessions.add(clientSessionId);
+            stompToUsername.put(sessionId, username);
+            
+            log.info("WebSocket CONNECTED | sessionId={} | username={} | clientSessionId={} | total={}", 
+                sessionId, username, clientSessionId, activeClientSessions.size());
+            
+            // Retardo de 500ms para evitar la condición de carrera con la suscripción del cliente
+            CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                broadcastPresence();
+            });
         }
     }
 
@@ -51,19 +67,28 @@ public class WebSocketEventListener {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = accessor.getSessionId();
         if (sessionId != null) {
-            activeSessions.remove(sessionId);
-            log.info("WebSocket DISCONNECT | sessionId={} | total={}", sessionId, activeSessions.size());
+            stompToUsername.remove(sessionId);
+            String clientSessionId = stompToClientSession.remove(sessionId);
+            if (clientSessionId != null) {
+                activeClientSessions.remove(clientSessionId);
+                log.info("WebSocket DISCONNECT | sessionId={} | clientSessionId={} | total={}", 
+                    sessionId, clientSessionId, activeClientSessions.size());
+            }
             broadcastPresence();
         }
     }
 
+    public void clearAllSessions() {
+        stompToClientSession.clear();
+        activeClientSessions.clear();
+        stompToUsername.clear();
+    }
+
     private void broadcastPresence() {
-        // Al enviar un objeto concreto (PresenceResponse), desaparece la ambigüedad
-        PresenceResponse response = new PresenceResponse(activeSessions.size(), activeSessions);
+        PresenceResponse response = new PresenceResponse(activeClientSessions.size(), activeClientSessions);
         messagingTemplate.convertAndSend("/topic/presence", response);
     }
 
-    // Pequeña clase de apoyo para estructurar la respuesta
     @Data
     @AllArgsConstructor
     static class PresenceResponse {

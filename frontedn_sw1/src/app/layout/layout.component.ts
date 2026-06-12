@@ -50,6 +50,19 @@ import { NotificationService } from '../services/notification.service';
               <i-lucide name="pencil-ruler" [size]="20" class="group-hover:text-brand-primary"></i-lucide>
               <span class="font-medium text-sm">Diseñador de Flujos</span>
             </a>
+
+            <!-- Diseñador de Políticas por Voz: solo DISEÑADOR_POLITICAS -->
+            <a
+              routerLink="/politicas"
+              routerLinkActive="bg-white/10 text-brand-primary border-white/10"
+              class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group"
+            >
+              <i-lucide name="mic" [size]="20" class="group-hover:text-brand-primary"></i-lucide>
+              <span class="font-medium text-sm">Diseñador de Políticas</span>
+              <span class="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                IA
+              </span>
+            </a>
           }
 
           <!-- Bandeja de Trabajo: FUNCIONARIO y cualquier rol con tareas -->
