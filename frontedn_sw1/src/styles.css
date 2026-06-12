@@ -1,0 +1,62 @@
+/* ── Importar Tailwind CSS v4 ───────────────────────────────────────────────── */
+@import 'tailwindcss';
+
+/* ── Variables de tema ────────────────────────────────────────────────────── */
+@theme {
+  --color-brand-primary:   #6366f1;
+  --color-brand-secondary: #8b5cf6;
+  --color-brand-accent:    #f59e0b;
+}
+
+/* ── Reset y fondo global OSCURO OBLIGATORIO ───────────────────────────────── */
+html, body {
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #0f172a !important; /* Fondo azul muy oscuro casi negro */
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%) !important;
+  color: #f8fafc !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+/* ── Clases utilitarias personalizadas ───────────────────────────────────── */
+.glass {
+  background: rgba(15, 23, 42, 0.8) !important; /* Más opaco para asegurar visibilidad */
+  backdrop-filter: blur(20px);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.7) !important; /* bg-slate-800 con opacidad */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: white !important;
+}
+
+.glass-card h1, .glass-card h2, .glass-card h3, .glass-card p, .glass-card span {
+  color: white !important;
+}
+
+/* ── Animaciones ─────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ── Texto visible ── */
+.text-white { color: #ffffff !important; }
+.text-white\/40 { color: rgba(255, 255, 255, 0.4) !important; }
+.text-white\/30 { color: rgba(255, 255, 255, 0.3) !important; }
+.text-indigo-400 { color: #818cf8 !important; }
+
+/* ── Scrollbars ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+/* ── Estilos oficiales de Quill para Tailwind v4 (Limpio y sin caracteres raros) ── */
+@import 'quill/dist/quill.snow.css';
